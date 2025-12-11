@@ -1,0 +1,35 @@
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker & Database Volumes (CRITICAL)
+# Ignore the actual database binary data, but keep the folder structure if using .keep files
+**/volumes/db/data/
+**/volumes/n8n_data/
+**/volumes/wp_data/
+**/volumes/wp_db_data/
+**/.gemini/
+
+# Sensitive / Temporary
+*.log
+*.tmp
+.vscode/
+.idea/
+
+# We Keep:
+# - nodes/office/sysop/seeds/data/*.geojson (These are our source of truth map layers)
+# - nodes/atlas/canon.sql (Schema)
