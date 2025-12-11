@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # --- OPERATIONS LAYER ---
+  sysop:
+    build:
+      context: ./sysop
+      dockerfile: Dockerfile
+    container_name: min-sysop
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./sysop/logs:/logs
+    restart: unless-stopped
+    networks:
+      - ministry-net
+    environment:
+      - SYSTEM_ROLE=OS
+    dns:
+      - 8.8.8.8
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: min-n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+    networks:
+      - ministry-net
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=n8n-db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8n
+      - DB_POSTGRESDB_PASSWORD=password
+    depends_on:
+      - n8n-db
+
+  n8n-db:
+    image: postgres:16-alpine
+    container_name: min-n8n-db
+    restart: unless-stopped
+    networks:
+      - ministry-net
+    environment:
+      - POSTGRES_USER=n8n
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=n8n
+    volumes:
+      - n8n_db_data:/var/lib/postgresql/data
+
+  # --- PRESENTATION LAYER ---
+  wordpress:
+    image: wordpress:latest
+    container_name: min-wp
+    ports:
+      - "8080:80"
+    volumes:
+      - wp_data:/var/www/html
+    restart: unless-stopped
+    networks:
+      - ministry-net
+    environment:
+      - WORDPRESS_DB_HOST=wp-db
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=password
+      - WORDPRESS_DB_NAME=wordpress
+    depends_on:
+      - wp-db
+
+  wp-db:
+    image: mysql:8.0
+    container_name: min-wp-db
+    restart: unless-stopped
+    networks:
+      - ministry-net
+    environment:
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - wp_db_data:/var/lib/mysql
+
+  # --- INTELLIGENCE LAYER ---
+  scout:
+    build:
+      context: ./scout
+      dockerfile: Dockerfile
+    container_name: min-scout
+    # command: tail -f /dev/null # Handled in Dockerfile
+    networks:
+      - ministry-net
+
+  minister:
+    build:
+      context: ./minister
+      dockerfile: Dockerfile
+    container_name: min-minister
+    # command: tail -f /dev/null # Handled in Dockerfile
+    networks:
+      - ministry-net
+
+volumes:
+  n8n_data:
+  n8n_db_data:
+  wp_data:
+  wp_db_data:
+
+
+networks:
+  ministry-net:
+    driver: bridge

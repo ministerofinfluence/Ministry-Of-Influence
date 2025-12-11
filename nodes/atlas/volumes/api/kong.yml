@@ -1,0 +1,72 @@
+_format_version: "2.1"
+
+services:
+  - name: settings
+    url: http://meta:8080/
+    routes:
+      - name: settings
+        paths:
+          - /
+
+  - name: rest
+    url: http://rest:3000/
+    routes:
+      - name: rest
+        paths:
+          - /rest/v1/
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - HEAD
+            - OPTIONS
+          headers:
+            - apikey
+            - content-type
+            - authorization
+          exposed_headers:
+            - content-range
+            - content-length
+          max_age: 3600
+
+  - name: auth
+    url: http://auth:9999/
+    routes:
+      - name: auth
+        paths:
+          - /auth/v1/
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - apikey
+            - content-type
+            - authorization
+
+  - name: realtime
+    url: http://realtime:4000/
+    routes:
+      - name: realtime
+        paths:
+          - /realtime/v1/
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
